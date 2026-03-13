@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Summary of Grades</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',Arial,sans-serif; background:#f4f6f9; color:#1a1a2e; font-size:13px; min-height:100vh; }
+
+  /* ── HEADER ── */
+  .header { background:#fff; border-bottom:3px solid #0038a8; padding:18px 28px; display:flex; align-items:center; gap:18px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .header-logo { width:52px; height:52px; background:linear-gradient(135deg,#0038a8,#1a50c8); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 4px 10px rgba(0,56,168,.25); }
+  .header-body h1 { font-size:18px; font-weight:700; color:#0038a8; }
+  .header-body p  { font-size:11px; color:#64748b; margin-top:2px; }
+  .header-right { margin-left:auto; text-align:right; font-size:11px; color:#64748b; line-height:1.9; }
+  .header-right b { color:#0038a8; }
+  .hfield { display:flex; align-items:center; gap:6px; justify-content:flex-end; margin-bottom:2px; }
+  .hfield label { font-size:11px; color:#64748b; white-space:nowrap; }
+  .hinput { border:none; border-bottom:1.5px solid #e2e8f0; background:transparent; font-size:11px; font-weight:700; color:#0038a8; text-align:right; outline:none; width:160px; padding:1px 2px; transition:border-color .2s; }
+  .hinput:focus { border-bottom-color:#0038a8; }
+  .hinput::placeholder { color:#cbd5e1; font-weight:400; }
+
+  .main { max-width:1340px; margin:0 auto; padding:20px 18px 48px; }
+
+  /* ── STATS ── */
+  .stats { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:18px; }
+  .stat { background:#fff; border-radius:9px; padding:14px 16px; border:1px solid #e8ecf0; display:flex; align-items:center; gap:12px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .stat-icon { width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+  .stat-val { font-size:20px; font-weight:700; line-height:1; }
+  .stat-lbl { font-size:9px; color:#94a3b8; text-transform:uppercase; letter-spacing:.8px; margin-top:3px; }
+  .ic-blue{background:#eff6ff;} .vc-blue{color:#0038a8;}
+  .ic-green{background:#f0fdf4;} .vc-green{color:#16a34a;}
+  .ic-red{background:#fef2f2;} .vc-red{color:#dc2626;}
+  .ic-amber{background:#fffbeb;} .vc-amber{color:#d97706;}
+  .ic-purple{background:#faf5ff;} .vc-purple{color:#7c3aed;}
+  .ic-teal{background:#f0fdfa;} .vc-teal{color:#0d9488;}
+
+  /* ── TOOLBAR ── */
+  .toolbar { background:#fff; border:1px solid #e8ecf0; border-radius:9px; padding:11px 14px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,.04); position:relative; z-index:10; }
+  .search { flex:1; min-width:170px; padding:7px 12px 7px 34px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; outline:none; background:#f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center; transition:border-color .2s; }
+  .search:focus { border-color:#0038a8; background-color:#fff; }
+  .seg { display:flex; border:1px solid #e2e8f0; border-radius:6px; overflow:hidden; }
+  .seg button { padding:7px 14px; background:#fff; border:none; font-size:11px; font-weight:600; color:#64748b; cursor:pointer; transition:all .15s; white-space:nowrap; }
+  .seg button+button { border-left:1px solid #e2e8f0; }
+  .seg button.active { background:#0038a8; color:#fff; }
+  .seg button:hover:not(.active) { background:#f0f4ff; color:#0038a8; }
+  .btn { padding:7px 14px; border-radius:6px; border:1px solid #e2e8f0; font-size:11px; font-weight:600; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:5px; background:#fff; color:#374151; white-space:nowrap; }
+  .btn:hover { background:#f8fafc; }
+  .btn-blue   { background:#0038a8; color:#fff; border-color:#0038a8; }
+  .btn-blue:hover   { background:#002d8a; }
+  .btn-green  { background:#16a34a; color:#fff; border-color:#16a34a; }
+  .btn-green:hover  { background:#15803d; }
+  .btn-pdf    { background:#dc2626; color:#fff; border-color:#dc2626; }
+  .btn-pdf:hover    { background:#b91c1c; }
+  .btn-danger { color:#dc2626; border-color:#fca5a5; }
+  .btn-danger:hover { background:#fef2f2; }
+  .btn-upload { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+  .btn-upload:hover { background:#6d28d9; }
+  .btn-backup { background:#0891b2; color:#fff; border-color:#0891b2; }
+  .btn-backup:hover { background:#0e7490; }
+
+  /* ── BACKUP MODAL ── */
+  .bk-list { display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; }
+  .bk-item { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; display:flex; align-items:center; gap:12px; transition:border-color .15s; }
+  .bk-item:hover { border-color:#0891b2; }
+  .bk-icon { font-size:22px; flex-shrink:0; }
+  .bk-info { flex:1; min-width:0; }
+  .bk-label { font-weight:600; font-size:12px; color:#1e293b; }
+  .bk-meta  { font-size:10px; color:#94a3b8; margin-top:2px; }
+  .bk-actions { display:flex; gap:6px; flex-shrink:0; }
+  .bk-btn { padding:5px 11px; border-radius:5px; border:1px solid #e2e8f0; font-size:10px; font-weight:600; cursor:pointer; transition:all .15s; background:#fff; }
+  .bk-btn.restore { border-color:#0891b2; color:#0891b2; }
+  .bk-btn.restore:hover { background:#e0f2fe; }
+  .bk-btn.del     { border-color:#fca5a5; color:#dc2626; }
+  .bk-btn.del:hover { background:#fef2f2; }
+  .bk-empty { text-align:center; padding:28px 20px; color:#94a3b8; font-size:12px; }
+  .bk-empty span { font-size:28px; display:block; margin-bottom:8px; }
+  .bk-divider { height:1px; background:#e8ecf0; margin:10px 0; }
+  .bk-count-badge { background:#e0f2fe; color:#0891b2; font-size:9px; font-weight:700; padding:2px 7px; border-radius:10px; margin-left:6px; }
+
+  .edit-bar { background:#fffbeb; border:1px solid #fde68a; border-radius:7px; padding:9px 14px; font-size:11px; color:#92400e; display:none; align-items:center; gap:7px; margin-bottom:12px; }
+  .edit-bar.show { display:flex; }
+
+  /* ── TABLE CARD (screen) ── */
+  .table-card { background:#fff; border:1px solid #e8ecf0; border-radius:9px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.04); }
+  .table-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:11px; min-width:920px; }
+
+  thead th { background:#0038a8; color:#fff; padding:9px 10px; text-align:center; font-weight:600; font-size:9px; letter-spacing:.4px; text-transform:uppercase; border-right:1px solid rgba(255,255,255,.1); white-space:nowrap; }
+  thead th.left { text-align:left; }
+  thead tr.subrow th { background:#f8fafc; color:#64748b; font-size:8px; font-weight:500; padding:5px 8px; border-bottom:2px solid #e2e8f0; }
+  thead tr.subrow th.grp-border { border-left:2px solid #cbd5e1; }
+
+  tbody tr td { padding:6px 10px; text-align:center; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  tbody tr td.left { text-align:left; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:nth-child(even) td { background:#fafbfd; }
+  tbody tr:hover td { background:#f0f4ff !important; }
+  td.grp-border { border-left:2px solid #e2e8f0 !important; }
+
+  .row-num { color:#cbd5e1; font-size:10px; width:26px; }
+  .s-name  { font-weight:600; font-size:11px; color:#1e293b; }
+  .s-lrn   { font-size:9px; color:#94a3b8; margin-top:1px; }
+
+  .gv      { font-weight:700; font-size:11px; }
+  .gv.pass { color:#16a34a; } .gv.warn { color:#d97706; } .gv.fail { color:#dc2626; } .gv.empty { color:#cbd5e1; }
+  .fg-val  { font-weight:700; font-size:11px; }
+  .avg-val { font-size:13px; font-weight:700; }
+  .gen-val { font-size:15px; font-weight:800; }
+  .sem-avg-col { font-size:12px; font-weight:700; }
+
+  .gi { width:36px; padding:3px 2px; border:1px solid #e2e8f0; border-radius:4px; text-align:center; font-size:11px; font-weight:700; font-family:inherit; outline:none; background:#fff; transition:all .15s; -moz-appearance:textfield; }
+  .gi::-webkit-outer-spin-button,.gi::-webkit-inner-spin-button { -webkit-appearance:none; }
+  .gi:focus { border-color:#0038a8; box-shadow:0 0 0 2px rgba(0,56,168,.1); }
+  .gi.pass  { color:#16a34a; border-color:#bbf7d0; background:#f0fdf4; }
+  .gi.warn  { color:#d97706; border-color:#fde68a; background:#fffbeb; }
+  .gi.fail  { color:#dc2626; border-color:#fecaca; background:#fef2f2; }
+  .gi.empty { color:#94a3b8; }
+  .icell    { display:flex; align-items:center; justify-content:center; gap:3px; }
+  .isep     { color:#d1d5db; font-size:9px; }
+
+  .pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:9px; font-weight:700; letter-spacing:.4px; white-space:nowrap; }
+  .pill-pass { background:#dcfce7; color:#15803d; }
+  .pill-fail { background:#fee2e2; color:#dc2626; }
+  .pill-none { background:#f1f5f9; color:#94a3b8; }
+
+  .no-results { text-align:center; padding:36px; color:#94a3b8; font-size:12px; display:none; }
+  .no-results span { font-size:28px; display:block; margin-bottom:8px; }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:#1e293b; color:#fff; padding:10px 18px; border-radius:7px; font-size:12px; font-weight:500; opacity:0; pointer-events:none; transition:opacity .3s,transform .3s; transform:translateY(6px); box-shadow:0 8px 20px rgba(0,0,0,.2); z-index:1000; }
+  .toast.show { opacity:1; transform:translateY(0); }
+
+  .footer { text-align:center; font-size:10px; color:#94a3b8; padding:18px; border-top:1px solid #e8ecf0; background:#fff; margin-top:8px; letter-spacing:.5px; }
+
+  /* ── PRINT SECTION (hidden on screen) ── */
+  .print-only { display:none; }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { background:#fff; font-size:9px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+    /* Hide all screen UI */
+    .header, .main, .footer, .toast { display:none !important; }
+
+    /* Show print-only content */
+    .print-only { display:block !important; }
+
+    /* Print page layout */
+    .print-page {
+      width:100%;
+      page-break-after: always;
+    }
+    .print-page:last-child { page-break-after:auto; }
+
+    /* Print header per page */
+    .print-header {
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:10px 16px;
+      border-bottom:3px solid #0038a8;
+      background:#0038a8;
+      color:#fff;
+      margin-bottom:10px;
+    }
+    .print-header-logo {
+      width:44px; height:44px;
+      background:#fff; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; flex-shrink:0;
+    }
+    .print-header-text h2 { font-size:14px; font-weight:700; }
+    .print-header-text p  { font-size:9px; opacity:.85; margin-top:2px; }
+    .print-header-meta {
+      margin-left:auto; text-align:right;
+      font-size:9px; opacity:.9; line-height:1.7;
+    }
+    .print-header-meta b { color:#fcd116; }
+
+    .print-sem-badge {
+      display:inline-block;
+      background:#fcd116;
+      color:#0038a8;
+      font-weight:700;
+      font-size:11px;
+      padding:3px 12px;
+      border-radius:3px;
+      margin-bottom:8px;
+      letter-spacing:.5px;
+    }
+
+    /* Print stats row */
+    .print-stats {
+      display:flex;
+      gap:8px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+    .print-stat {
+      flex:1;
+      min-width:80px;
+      border:1px solid #e0e0e0;
+      border-top:2px solid #0038a8;
+      border-radius:4px;
+      padding:6px 10px;
+      text-align:center;
+      background:#fafbff;
+    }
+    .print-stat .pval { font-size:16px; font-weight:700; color:#0038a8; }
+    .print-stat .plbl { font-size:7.5px; color:#888; text-transform:uppercase; letter-spacing:.8px; }
+
+    /* Print table */
+    .print-table-wrap { overflow:hidden; }
+    table.ptable {
+      width:100%;
+      border-collapse:collapse;
+      font-size:8.5px;
+    }
+    table.ptable thead th {
+      background:#0038a8 !important;
+      color:#fff !important;
+      padding:6px 7px;
+      text-align:center;
+      font-weight:600;
+      font-size:7.5px;
+      letter-spacing:.3px;
+      text-transform:uppercase;
+      border-right:1px solid rgba(255,255,255,.15);
+      white-space:nowrap;
+    }
+    table.ptable thead th.left { text-align:left; }
+    table.ptable thead tr.subrow th {
+      background:#e8eef8 !important;
+      color:#334155 !important;
+      font-size:7px;
+      font-weight:500;
+      padding:4px 6px;
+      border-bottom:1px solid #cbd5e1;
+    }
+    table.ptable thead tr.subrow th.grp-border { border-left:1px solid #94a3b8; }
+    table.ptable tbody td {
+      padding:4px 7px;
+      text-align:center;
+      border-bottom:1px solid #e8ecf0;
+      vertical-align:middle;
+    }
+    table.ptable tbody td.left { text-align:left; }
+    table.ptable tbody tr:nth-child(even) td { background:#f8fafc; }
+    table.ptable td.grp-border { border-left:1px solid #cbd5e1 !important; }
+    .pname  { font-weight:600; font-size:8.5px; }
+    .plrn   { font-size:7px; color:#94a3b8; }
+    .pnum   { color:#94a3b8; font-size:8px; }
+
+    .pg-pass { color:#15803d; font-weight:700; }
+    .pg-warn { color:#d97706; font-weight:700; }
+    .pg-fail { color:#dc2626; font-weight:700; }
+    .pg-empty{ color:#cbd5e1; }
+
+    .p-pill { display:inline-block; padding:1px 6px; border-radius:3px; font-size:7.5px; font-weight:700; }
+    .p-pill.pass { background:#dcfce7; color:#15803d; }
+    .p-pill.fail { background:#fee2e2; color:#dc2626; }
+    .p-pill.none { background:#f1f5f9; color:#94a3b8; }
+
+    .p-avg  { font-size:11px; font-weight:800; }
+    .p-gen  { font-size:12px; font-weight:800; }
+
+    /* Signature area */
+    .print-footer {
+      margin-top:20px;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+    }
+    .sign-block { flex:1; text-align:center; }
+    .sign-line  { border-top:1px solid #333; padding-top:4px; font-size:8px; color:#555; margin-top:24px; }
+    .sign-label { font-size:7px; color:#888; margin-top:2px; }
+
+    .print-page-num { text-align:right; font-size:7.5px; color:#94a3b8; margin-top:8px; }
+
+    @page { size:landscape; margin:10mm 12mm; }
+  }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.5);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    visibility:hidden; opacity:0; pointer-events:none;
+    transition:opacity .2s, visibility .2s;
+  }
+  .modal-overlay.show { visibility:visible; opacity:1; pointer-events:all; }
+  #uploadModal { z-index:2000; }
+  #backupModal { z-index:2100; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:14px; width:100%; max-width:560px; box-shadow:0 20px 60px rgba(0,0,0,.25); overflow:hidden; animation:modalIn .25s ease; }
+  @keyframes modalIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+  .modal-header { background:#0038a8; color:#fff; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .modal-header h3 { font-size:15px; font-weight:700; }
+  .modal-header p  { font-size:11px; opacity:.8; margin-top:2px; }
+  .modal-close { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; opacity:.8; line-height:1; }
+  .modal-close:hover { opacity:1; }
+  .modal-body { padding:20px; }
+
+  .drop-zone { border:2px dashed #cbd5e1; border-radius:10px; padding:32px 20px; text-align:center; cursor:pointer; transition:all .2s; background:#f8fafc; position:relative; }
+  .drop-zone:hover, .drop-zone.dragover { border-color:#7c3aed; background:#faf5ff; }
+  .drop-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .drop-icon { font-size:36px; margin-bottom:8px; }
+  .drop-title { font-size:14px; font-weight:600; color:#374151; }
+  .drop-sub   { font-size:11px; color:#94a3b8; margin-top:4px; }
+
+  .preview-box { margin-top:14px; display:none; }
+  .preview-box.show { display:block; }
+  .preview-img { width:100%; max-height:200px; object-fit:contain; border-radius:8px; border:1px solid #e2e8f0; background:#f8fafc; }
+  .preview-name { font-size:11px; color:#64748b; margin-top:6px; text-align:center; }
+
+  .sem-select-row { display:flex; gap:8px; margin-top:14px; align-items:center; }
+  .sem-select-row label { font-size:12px; font-weight:600; color:#374151; white-space:nowrap; }
+  .sem-select-row select { flex:1; padding:7px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; outline:none; }
+  .sem-select-row select:focus { border-color:#7c3aed; }
+
+  .ai-status { margin-top:14px; padding:10px 14px; border-radius:7px; font-size:12px; display:none; align-items:center; gap:8px; }
+  .ai-status.show { display:flex; }
+  .ai-status.processing { background:#faf5ff; border:1px solid #e9d5ff; color:#7c3aed; }
+  .ai-status.success    { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
+  .ai-status.error      { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+
+  .spinner { width:16px; height:16px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  .modal-footer { padding:14px 20px; border-top:1px solid #e8ecf0; display:flex; gap:8px; justify-content:flex-end; }
+
+  .result-preview { margin-top:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; max-height:160px; overflow-y:auto; font-size:11px; display:none; }
+  .result-preview.show { display:block; }
+  .result-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #f1f5f9; }
+  .result-row:last-child { border-bottom:none; }
+  .result-name { color:#374151; font-weight:500; }
+  .result-grades { color:#0038a8; font-weight:600; }
+
+  @media(max-width:680px){
+    .stats { grid-template-columns:repeat(3,1fr); }
+    .toolbar { flex-direction:column; align-items:stretch; }
+    .header-right { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SCREEN UI ── -->
+<div class="header">
+  <div class="header-logo">🎓</div>
+  <div class="header-body">
+    <h1>Summary of Grades</h1>
+    <p>Department of Education &nbsp;·&nbsp; Senior High School &nbsp;·&nbsp; Grade 12 &nbsp;·&nbsp; TVL Track</p>
+  </div>
+  <div class="header-right">
+    <div class="hfield"><label>School Year:</label><input class="hinput" id="fieldSY" value="2025–2026" onchange="saveInfo()"/></div>
+    <div class="hfield"><label>Section:</label><input class="hinput" id="fieldSection" placeholder="Enter section…" onchange="saveInfo()"/></div>
+    <div class="hfield"><label>Adviser:</label><input class="hinput" id="fieldAdviser" placeholder="Enter adviser name…" onchange="saveInfo()"/></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="stats" id="statsRow"></div>
+
+  <div class="toolbar">
+    <input class="search" type="text" id="searchInput" placeholder="Search name or LRN…" oninput="render()"/>
+    <div class="seg">
+      <button class="active" onclick="switchView('sem1',this)">1st Semester</button>
+      <button onclick="switchView('sem2',this)">2nd Semester</button>
+      <button onclick="switchView('gen',this)">General Average</button>
+    </div>
+    <button class="btn btn-blue" onclick="toggleEdit()" id="editBtn">✏️ Edit Grades</button>
+    <button class="btn btn-upload" onclick="openUpload()">📂 Upload SF9</button>
+    <button class="btn btn-green" onclick="saveData()">💾 Save</button>
+    <button class="btn btn-backup" onclick="openBackup()">🗄️ Backups</button>
+    <button class="btn btn-pdf" onclick="downloadPDF()">📄 Print / PDF</button>
+    <button class="btn btn-danger" onclick="clearSem()">🗑 Clear</button>
+  </div>
+
+  <div class="edit-bar" id="editBar">
+    ✏️ <strong>Edit Mode</strong> — Enter scores (60–100). Final grades and averages update automatically.
+  </div>
+
+  <div class="table-card">
+    <div class="table-scroll">
+      <table id="gradesTable"></table>
+    </div>
+    <div class="no-results" id="noResults"><span>🔍</span>No students found.</div>
+  </div>
+</div>
+
+<div class="footer">
+  Department of Education &nbsp;·&nbsp; Republic of the Philippines &nbsp;·&nbsp; Generated March 2026 &nbsp;·&nbsp; For Official Use Only
+</div>
+
+<!-- ── PRINT-ONLY PAGES ── -->
+<div class="print-only" id="printContent"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ── UPLOAD MODAL ── -->
+<div class="modal-overlay" id="uploadModal" onclick="closeUpload()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h3>📂 Upload School Form 9 (SF9)</h3>
+        <p>AI will automatically read and record grades from your form</p>
+      </div>
+      <button class="modal-close" onclick="closeUpload()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*,.pdf" onchange="onFileSelect(this)"/>
+        <div class="drop-icon">📄</div>
+        <div class="drop-title">Drop your SF9 file here or click to browse</div>
+        <div class="drop-sub">Supports: JPG, PNG, PDF — scanned or digital forms</div>
+      </div>
+      <div class="preview-box" id="previewBox">
+        <img id="previewImg" class="preview-img" src="" alt="Preview"/>
+        <div class="preview-name" id="previewName"></div>
+      </div>
+      <div class="sem-select-row">
+        <label>Apply grades to:</label>
+        <select id="uploadSemSelect">
+          <option value="1">1st Semester (Q1 & Q2)</option>
+          <option value="2">2nd Semester (Q3 & Q4)</option>
+        </select>
+      </div>
+      <div class="ai-status" id="aiStatus">
+        <div class="spinner"></div>
+        <span id="aiStatusText">Analyzing form with AI…</span>
+      </div>
+      <div class="result-preview" id="resultPreview"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeUpload()">Cancel</button>
+      <button class="btn btn-upload" id="extractBtn" onclick="extractGrades()" disabled style="opacity:.5">🤖 Extract Grades with AI</button>
+      <button class="btn btn-green" id="applyBtn" onclick="applyExtracted()" style="display:none">✅ Apply Grades</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BACKUP MODAL ── -->
+<div class="modal-overlay" id="backupModal" onclick="closeBackup()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header" style="background:#0891b2">
+      <div>
+        <h3>🗄️ Grade Backups</h3>
+        <p>Restore a previous save or download a backup file</p>
+      </div>
+      <button class="modal-close" onclick="closeBackup()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn btn-backup" style="flex:1" onclick="createBackup()">➕ Save New Backup</button>
+        <button class="btn" style="flex:1;border-color:#0891b2;color:#0891b2" onclick="exportBackup()">⬇️ Export to File</button>
+        <label class="btn" style="flex:1;border-color:#7c3aed;color:#7c3aed;cursor:pointer;justify-content:center">
+          ⬆️ Import File
+          <input type="file" accept=".json" style="display:none" onchange="importBackup(this)"/>
+        </label>
+      </div>
+      <div class="bk-divider"></div>
+      <div id="backupList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── SUBJECTS ── */
+const SEM1 = [
+  {key:"introPhil",    label:"Intro to Philosophy",       grp:"CORE"},
+  {key:"contempPhil",  label:"Contemp. Phil. Arts",       grp:"CORE"},
+  {key:"understanding",label:"Understanding Culture",     grp:"CORE"},
+  {key:"pe",           label:"P.E.",                      grp:"CORE"},
+  {key:"practResearch",label:"Practical Research 2",      grp:"APPLIED"},
+  {key:"filipino",     label:"Filipino sa Piling Larang", grp:"APPLIED"},
+  {key:"socialSci",    label:"Social Science",            grp:"SPEC"},
+  {key:"tvl56",        label:"TVL 5 & 6",                 grp:"SPEC"},
+];
+const SEM2 = [
+  {key:"media",         label:"Media & Info Literacy",      grp:"CORE"},
+  {key:"physSci",       label:"Physical Science",           grp:"CORE"},
+  {key:"pe2",           label:"P.E.",                       grp:"CORE"},
+  {key:"inquiries",     label:"Inquiries & Investigations", grp:"APPLIED"},
+  {key:"appliedEcon",   label:"Applied Economics",          grp:"APPLIED"},
+  {key:"drrr",          label:"DRRR",                       grp:"SPEC"},
+  {key:"workImmersion", label:"Work Immersion",             grp:"SPEC"},
+  {key:"tvl78",         label:"TVL 7 & 8",                  grp:"SPEC"},
+];
+
+const RAW = [
+  ["123285120108","ABILA, ROLANDO JR. CAHUTAY"],
+  ["123285120037","ALVARADO, JOVANE RABASTO"],
+  ["123295130008","BARTOLATA, KIT JOSHUA GUTIERREZ"],
+  ["123285110011","BLANCA, R-JAY ATIPOLO"],
+  ["123285130016","BRANZUELA, ELVAN JAN ROMERO"],
+  ["123285130019","CATINGGAN, ALJUN BACUNAWA"],
+  ["123285130045","COLLAMAT, AKIA CZIAN MOMPIL"],
+  ["123295130009","DE LARA, JHONREY ESPINA"],
+  ["113494130023","DELA PEÑA, MARC NIÑO CONEJOS"],
+  ["103222130066","DIALINO, MANOLITO JR PALAD"],
+  ["123295120005","LABARIÑO, JANNO CALLAO"],
+  ["123799140016","LABAYDAN, MAC JAMES ODTUHAN"],
+  ["123285130056","MATADOS, MCKRIEGER VHINS PRUDENCIADO"],
+  ["123290130007","MENDOZA, DAVID AXCEL BELARMINO"],
+  ["123287120043","MERINO, CARLO ROQUERO"],
+  ["123287130009","MERINO, JAY MARK MONIÑO"],
+  ["123285130057","MERINO, JHODEL VERSOZA"],
+  ["123285130058","MERINO, MARTIN ALVARADO"],
+  ["123290110017","MONSANTO, IVAN MATIS"],
+  ["123285130028","ORBESO, JHUN LEONEL VERBO"],
+  ["123285120117","PAÑA, RAYMUND TAMAYO"],
+  ["123285120112","ROMERO, REAL JOHN GOLLAS"],
+  ["158538140111","ROSIALDA JR, EDITO ESPINOSA"],
+  ["123285120087","TAMAYO, JARENT CANE BELAGUIN"],
+  ["123287130011","TAPAYA, ARCHIEL GONJORAN"],
+  ["123295130016","TAPAYA, TRISTAN MARC EDEM"],
+  ["123290130009","TRANGIA, RENZ JAY CASEÑARES"],
+  ["123285130064","URBANEJA, CRISVIN ABET"],
+  ["123290120011","BATALIRAN, REA FRANCISCO"],
+  ["123295130022","JALIMAO, JAINA LOPEZ"],
+  ["123287110013","MANAHON, SHERILYN GEMINA"],
+  ["123285130072","MATADOS, JONALYN PERIDO"],
+  ["123285130077","PANIM, NICOLE DELA CRUZ"],
+  ["123285130078","PRUDENCIADO, ALTHIA ME HILONGO"],
+];
+
+/* ─── INIT ── */
+function emptyG(subs){ const o={}; subs.forEach(s=>o[s.key]=null); return o; }
+function mkStudent(lrn,name){
+  return { lrn, name,
+    sem1:{ q1:emptyG(SEM1), q2:emptyG(SEM1) },
+    sem2:{ q3:emptyG(SEM2), q4:emptyG(SEM2) }
+  };
+}
+function loadData(){
+  try{ const d=localStorage.getItem('deped_v4'); if(d) return JSON.parse(d); }catch(e){}
+  return RAW.map(([l,n])=>mkStudent(l,n));
+}
+let students = loadData();
+let curView  = 'sem1';
+let editMode = false;
+
+/* ─── HELPERS ── */
+const semSubs = sem => sem===1 ? SEM1 : SEM2;
+const semData = (s,sem) => sem===1 ? s.sem1 : s.sem2;
+const semQA   = sem => sem===1 ? 'q1' : 'q3';
+const semQB   = sem => sem===1 ? 'q2' : 'q4';
+const semQAL  = sem => sem===1 ? 'Q1' : 'Q3';
+const semQBL  = sem => sem===1 ? 'Q2' : 'Q4';
+const curSem  = () => curView==='sem2' ? 2 : 1;
+const subs    = () => semSubs(curSem());
+const qa      = () => semQA(curSem());
+const qb      = () => semQB(curSem());
+
+function fgSub(s,key,sem){
+  const d=semData(s,sem), a=d[semQA(sem)][key], b=d[semQB(sem)][key];
+  if(a!==null&&b!==null) return Math.round((a+b)/2);
+  return a??b??null;
+}
+function semAvg(s,sem){
+  const fgs=semSubs(sem).map(({key})=>fgSub(s,key,sem)).filter(v=>v!==null);
+  if(!fgs.length) return null;
+  return fgs.reduce((a,b)=>a+b,0)/fgs.length;
+}
+function generalAvg(s){
+  const a1=semAvg(s,1), a2=semAvg(s,2);
+  if(a1!==null&&a2!==null) return (a1+a2)/2;
+  return a1??a2??null;
+}
+function cls(v){
+  if(v===null||v==='') return 'empty';
+  const n=+v; if(n>=90) return 'pass'; if(n>=75) return 'warn'; return 'fail';
+}
+
+/* ─── STATS ── */
+function renderStats(){
+  const gavgs=students.map(generalAvg).filter(v=>v!==null);
+  const ca=gavgs.length?(gavgs.reduce((a,b)=>a+b,0)/gavgs.length).toFixed(2):'—';
+  const pass=gavgs.filter(v=>v>=75).length;
+  const fail=gavgs.filter(v=>v<75).length;
+  const hi=gavgs.length?Math.max(...gavgs).toFixed(2):'—';
+  const lo=gavgs.length?Math.min(...gavgs).toFixed(2):'—';
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat"><div class="stat-icon ic-blue">👥</div><div><div class="stat-val vc-blue">${students.length}</div><div class="stat-lbl">Total</div></div></div>
+    <div class="stat"><div class="stat-icon ic-green">✅</div><div><div class="stat-val vc-green">${pass||'—'}</div><div class="stat-lbl">Passing</div></div></div>
+    <div class="stat"><div class="stat-icon ic-red">❌</div><div><div class="stat-val vc-red">${fail||'—'}</div><div class="stat-lbl">Failing</div></div></div>
+    <div class="stat"><div class="stat-icon ic-amber">📊</div><div><div class="stat-val vc-amber">${ca}</div><div class="stat-lbl">Gen. Avg</div></div></div>
+    <div class="stat"><div class="stat-icon ic-purple">🏆</div><div><div class="stat-val vc-purple">${hi}</div><div class="stat-lbl">Highest</div></div></div>
+    <div class="stat"><div class="stat-icon ic-teal">📉</div><div><div class="stat-val vc-teal">${lo}</div><div class="stat-lbl">Lowest</div></div></div>
+  `;
+}
+
+/* ─── FILTERED ── */
+function filtered(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  return students.filter(s=>s.name.toLowerCase().includes(q)||s.lrn.includes(q));
+}
+
+/* ─── RENDER DISPATCH ── */
+function render(){
+  renderStats();
+  const list=filtered();
+  document.getElementById('noResults').style.display=list.length?'none':'block';
+  if(curView==='gen') renderGeneral(list);
+  else renderSem(list);
+}
+
+/* ─── SEMESTER TABLE (screen) ── */
+function buildSemHeaders(sem){
+  const sub=semSubs(sem);
+  const GRP_ORDER=['CORE','APPLIED','SPEC'];
+  const GRP_LABEL={'CORE':'Core Subjects','APPLIED':'Applied Subjects','SPEC':'Specialized Subjects'};
+  const grouped={CORE:[],APPLIED:[],SPEC:[]};
+  sub.forEach(s=>grouped[s.grp].push(s));
+  let th1='', th2='', prevGrp=null;
+  GRP_ORDER.forEach(grp=>{
+    const g=grouped[grp]; if(!g.length) return;
+    th1+=`<th colspan="${g.length}">${GRP_LABEL[grp]}</th>`;
+    g.forEach(s=>{
+      const border=s.grp!==prevGrp?' class="grp-border"':'';
+      th2+=`<th${border}>${s.label}<br/><span style="font-weight:400;opacity:.7">${semQAL(sem)}·${semQBL(sem)}·FG</span></th>`;
+      prevGrp=s.grp;
+    });
+  });
+  return {th1,th2,grouped,GRP_ORDER};
+}
+
+function renderSem(list){
+  const sem=curSem();
+  const {th1,th2,grouped,GRP_ORDER}=buildSemHeaders(sem);
+  const QA=semQA(sem),QB=semQB(sem);
+
+  const rows=list.map(s=>{
+    const avg=semAvg(s,sem);
+    const avgStr=avg!==null?avg.toFixed(2):'—';
+    const passed=avg!==null&&avg>=75;
+    const no=students.indexOf(s)+1;
+    let cells='', pg=null;
+    GRP_ORDER.forEach(grp=>{
+      grouped[grp].forEach(subj=>{
+        const d=semData(s,sem);
+        const g1=d[QA][subj.key],g2=d[QB][subj.key],fgv=fgSub(s,subj.key,sem);
+        const border=subj.grp!==pg?' class="grp-border"':'';
+        pg=subj.grp;
+        if(editMode){
+          cells+=`<td${border}><div class="icell">
+            <input type="number" class="gi ${cls(g1)}" min="60" max="100" value="${g1??''}" placeholder="—"
+              data-lrn="${s.lrn}" data-q="${QA}" data-key="${subj.key}" data-sem="${sem}"
+              oninput="onInput(this)" onblur="onBlur(this)"/>
+            <span class="isep">·</span>
+            <input type="number" class="gi ${cls(g2)}" min="60" max="100" value="${g2??''}" placeholder="—"
+              data-lrn="${s.lrn}" data-q="${QB}" data-key="${subj.key}" data-sem="${sem}"
+              oninput="onInput(this)" onblur="onBlur(this)"/>
+            <span class="isep">·</span>
+            <span class="fg-val ${cls(fgv)}" id="fg_${s.lrn}_${subj.key}">${fgv??'—'}</span>
+          </div></td>`;
+        } else {
+          const f=v=>`<span class="gv ${cls(v)}">${v??'—'}</span>`;
+          cells+=`<td${border}>${f(g1)}·${f(g2)}·<span class="fg-val ${cls(fgv)}">${fgv??'—'}</span></td>`;
+        }
+      });
+    });
+    const isSem2 = sem === 2;
+    const ga = isSem2 ? generalAvg(s) : null;
+    const gaStr = ga !== null ? ga.toFixed(2) : '—';
+    const remarkBase = isSem2 ? ga : avg;
+    const remarkPassed = remarkBase !== null && remarkBase >= 75;
+    const rem = remarkBase !== null
+      ? `<span class="pill ${remarkPassed?'pill-pass':'pill-fail'}">${remarkPassed?'PASSED':'FAILED'}</span>`
+      : `<span class="pill pill-none">—</span>`;
+    const gaCell = isSem2
+      ? `<td style="background:#fffbeb;border-left:2px solid #fcd116"><span class="gen-val ${cls(ga)}" id="ga_${s.lrn}">${gaStr}</span></td>`
+      : '';
+    return `<tr>
+      <td class="row-num">${no}</td>
+      <td class="left"><div class="s-name">${s.name}</div><div class="s-lrn">${s.lrn}</div></td>
+      ${cells}
+      <td><span class="avg-val ${cls(avg)}" id="avg_${s.lrn}">${avgStr}</span></td>
+      ${gaCell}
+      <td id="rem_${s.lrn}">${rem}</td>
+    </tr>`;
+  }).join('');
+
+  const gaHeader = sem === 2
+    ? `<th rowspan="2" style="background:#b45309;min-width:62px">General<br/>Average</th>`
+    : '';
+
+  document.getElementById('gradesTable').innerHTML=`
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:26px">#</th>
+        <th rowspan="2" class="left" style="min-width:165px">Learner's Name / LRN</th>
+        ${th1}
+        <th rowspan="2" style="min-width:54px">Final<br/>Average</th>
+        ${gaHeader}
+        <th rowspan="2">Remarks</th>
+      </tr>
+      <tr class="subrow">${th2}</tr>
+    </thead>
+    <tbody>${rows}</tbody>`;
+}
+
+/* ─── GENERAL TABLE (screen) ── */
+function renderGeneral(list){
+  const rows=list.map(s=>{
+    const a1=semAvg(s,1),a2=semAvg(s,2),ga=generalAvg(s);
+    const passed=ga!==null&&ga>=75;
+    const no=students.indexOf(s)+1;
+    const s1cells=SEM1.map(({key})=>{const fg=fgSub(s,key,1);return`<td><span class="gv ${cls(fg)}">${fg??'—'}</span></td>`;}).join('');
+    const s2cells=SEM2.map(({key})=>{const fg=fgSub(s,key,2);return`<td><span class="gv ${cls(fg)}">${fg??'—'}</span></td>`;}).join('');
+    const rem=ga!==null?`<span class="pill ${passed?'pill-pass':'pill-fail'}">${passed?'PASSED':'FAILED'}</span>`:`<span class="pill pill-none">—</span>`;
+    return `<tr>
+      <td class="row-num">${no}</td>
+      <td class="left"><div class="s-name">${s.name}</div><div class="s-lrn">${s.lrn}</div></td>
+      ${s1cells}
+      <td class="grp-border"><span class="sem-avg-col ${cls(a1)}">${a1!==null?a1.toFixed(2):'—'}</span></td>
+      ${s2cells}
+      <td class="grp-border"><span class="sem-avg-col ${cls(a2)}">${a2!==null?a2.toFixed(2):'—'}</span></td>
+      <td class="grp-border"><span class="gen-val ${cls(ga)}" id="ga_${s.lrn}">${ga!==null?ga.toFixed(2):'—'}</span></td>
+      <td id="grem_${s.lrn}">${rem}</td>
+    </tr>`;
+  }).join('');
+  const s1th=SEM1.map(s=>`<th>${s.label}</th>`).join('');
+  const s2th=SEM2.map(s=>`<th>${s.label}</th>`).join('');
+  document.getElementById('gradesTable').innerHTML=`
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:26px">#</th>
+        <th rowspan="2" class="left" style="min-width:165px">Learner's Name / LRN</th>
+        <th colspan="${SEM1.length}">1st Semester Subjects (Final Grades)</th>
+        <th>1st Sem Avg</th>
+        <th colspan="${SEM2.length}">2nd Semester Subjects (Final Grades)</th>
+        <th>2nd Sem Avg</th>
+        <th style="background:#fcd116;color:#0038a8">General Average</th>
+        <th rowspan="2">Remarks</th>
+      </tr>
+      <tr class="subrow">
+        ${s1th}
+        <th class="grp-border" style="background:#e0e7ff;color:#3730a3;font-weight:700">SEM 1</th>
+        ${s2th}
+        <th class="grp-border" style="background:#e0e7ff;color:#3730a3;font-weight:700">SEM 2</th>
+        <th class="grp-border" style="background:#fef9c3;color:#92400e;font-weight:700">GEN AVG</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>`;
+}
+
+/* ─── INPUT HANDLERS ── */
+function onInput(el){
+  const v=el.value===''?null:+el.value;
+  el.className='gi '+(v===null?'empty':v>=90?'pass':v>=75?'warn':'fail');
+}
+function onBlur(el){
+  const {lrn,q,key,sem}=el.dataset;
+  let v=el.value===''?null:parseInt(el.value);
+  if(v!==null){v=Math.min(100,Math.max(60,v));el.value=v;}
+  const s=students.find(x=>x.lrn===lrn); if(!s) return;
+  const sn=+sem;
+  semData(s,sn)[q][key]=v;
+  el.className='gi '+(v===null?'empty':v>=90?'pass':v>=75?'warn':'fail');
+  const fgv=fgSub(s,key,sn);
+  const fgEl=document.getElementById(`fg_${lrn}_${key}`);
+  if(fgEl){fgEl.textContent=fgv??'—';fgEl.className=`fg-val ${cls(fgv)}`;}
+  const avg=semAvg(s,sn);
+  const avgEl=document.getElementById(`avg_${lrn}`);
+  const remEl=document.getElementById(`rem_${lrn}`);
+  if(avgEl){avgEl.textContent=avg!==null?avg.toFixed(2):'—';avgEl.className=`avg-val ${cls(avg)}`;}
+  // Update General Average cell (only shown in sem2 view)
+  const ga=generalAvg(s);
+  const gaEl=document.getElementById(`ga_${lrn}`);
+  if(gaEl){gaEl.textContent=ga!==null?ga.toFixed(2):'—';gaEl.className=`gen-val ${cls(ga)}`;}
+  // Remarks: in sem2 view base on GA; in sem1 view base on sem avg; in gen view use grem_
+  if(remEl){
+    const remarkBase = curView==='sem2' ? ga : avg;
+    const rp = remarkBase!==null && remarkBase>=75;
+    remEl.innerHTML=remarkBase!==null?`<span class="pill ${rp?'pill-pass':'pill-fail'}">${rp?'PASSED':'FAILED'}</span>`:`<span class="pill pill-none">—</span>`;
+  }
+  const gremEl=document.getElementById(`grem_${lrn}`);
+  if(gremEl){const p=ga!==null&&ga>=75;gremEl.innerHTML=ga!==null?`<span class="pill ${p?'pill-pass':'pill-fail'}">${p?'PASSED':'FAILED'}</span>`:`<span class="pill pill-none">—</span>`;}
+  renderStats();
+}
+
+/* ─── BUILD PRINT HTML ── */
+function buildPrintContent(){
+  const pCls=v=>{if(v===null)return'pg-empty';if(v>=90)return'pg-pass';if(v>=75)return'pg-warn';return'pg-fail';}
+  const info=getInfo();
+  const printMeta=`<div class="print-header-meta">
+          <div>School Year: <b>${info.sy}</b></div>
+          <div>Section: <b>${info.section}</b></div>
+          <div>Adviser: <b>${info.adviser}</b></div>
+        </div>`;
+
+  function semPage(sem){
+    const sub=semSubs(sem);
+    const QA=semQA(sem),QB=semQB(sem),QAL=semQAL(sem),QBL=semQBL(sem);
+    const GRP_ORDER=['CORE','APPLIED','SPEC'];
+    const GRP_LABEL={'CORE':'Core Subjects','APPLIED':'Applied Subjects','SPEC':'Specialized Subjects'};
+    const grouped={CORE:[],APPLIED:[],SPEC:[]};
+    sub.forEach(s=>grouped[s.grp].push(s));
+
+    let th1='',th2='',prevGrp=null;
+    GRP_ORDER.forEach(grp=>{
+      const g=grouped[grp]; if(!g.length) return;
+      th1+=`<th colspan="${g.length}">${GRP_LABEL[grp]}</th>`;
+      g.forEach(s=>{
+        const border=s.grp!==prevGrp?' class="grp-border"':'';
+        th2+=`<th${border}>${s.label}<br/><span>${QAL}·${QBL}·FG</span></th>`;
+        prevGrp=s.grp;
+      });
+    });
+
+    const avgs=students.map(s=>semAvg(s,sem)).filter(v=>v!==null);
+    const ca=avgs.length?(avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(2):'—';
+    const pass=avgs.filter(v=>v>=75).length;
+    const fail=avgs.filter(v=>v<75).length;
+    const hi=avgs.length?Math.max(...avgs).toFixed(2):'—';
+
+    const rows=students.map((s,i)=>{
+      const avg=semAvg(s,sem);
+      const avgStr=avg!==null?avg.toFixed(2):'—';
+      const passed=avg!==null&&avg>=75;
+      let cells='',pg=null;
+      GRP_ORDER.forEach(grp=>{
+        grouped[grp].forEach(subj=>{
+          const d=semData(s,sem);
+          const g1=d[QA][subj.key],g2=d[QB][subj.key],fgv=fgSub(s,subj.key,sem);
+          const border=subj.grp!==pg?' class="grp-border"':''; pg=subj.grp;
+          const f=v=>`<span class="${pCls(v)}">${v??'—'}</span>`;
+          cells+=`<td${border}>${f(g1)}·${f(g2)}·<b class="${pCls(fgv)}">${fgv??'—'}</b></td>`;
+        });
+      });
+      const isSem2p = sem === 2;
+      const ga = isSem2p ? generalAvg(s) : null;
+      const gaStr = ga !== null ? ga.toFixed(2) : '—';
+      const remarkBase = isSem2p ? ga : avg;
+      const rp = remarkBase !== null && remarkBase >= 75;
+      const rem = remarkBase !== null
+        ? `<span class="p-pill ${rp?'pass':'fail'}">${rp?'PASSED':'FAILED'}</span>`
+        : `<span class="p-pill none">—</span>`;
+      const gaCell = isSem2p
+        ? `<td style="background:#fffbeb;border-left:2px solid #fcd116"><span class="p-gen ${pCls(ga)}">${gaStr}</span></td>`
+        : '';
+      return `<tr>
+        <td class="pnum">${i+1}</td>
+        <td class="left"><div class="pname">${s.name}</div><div class="plrn">${s.lrn}</div></td>
+        ${cells}
+        <td><span class="p-avg ${pCls(avg)}">${avgStr}</span></td>
+        ${gaCell}
+        <td>${rem}</td>
+      </tr>`;
+    }).join('');
+
+    const printGaHeader = sem === 2
+      ? `<th rowspan="2" style="background:#b45309">General<br/>Average</th>`
+      : '';
+
+    return `
+    <div class="print-page">
+      <div class="print-header">
+        <div class="print-header-logo">🎓</div>
+        <div class="print-header-text">
+          <h2>SUMMARY OF GRADES</h2>
+          <p>Department of Education &nbsp;·&nbsp; Senior High School &nbsp;·&nbsp; Grade 12 &nbsp;·&nbsp; TVL Track</p>
+        </div>
+        ${printMeta}
+      </div>
+      <div style="padding:8px 0 4px">
+        <span class="print-sem-badge">${sem===1?'1ST':'2ND'} SEMESTER GRADES</span>
+      </div>
+      <div class="print-stats">
+        <div class="print-stat"><div class="pval">${students.length}</div><div class="plbl">Total</div></div>
+        <div class="print-stat"><div class="pval" style="color:#15803d">${pass||'—'}</div><div class="plbl">Passing</div></div>
+        <div class="print-stat"><div class="pval" style="color:#dc2626">${fail||'—'}</div><div class="plbl">Failing</div></div>
+        <div class="print-stat"><div class="pval" style="color:#d97706">${ca}</div><div class="plbl">Sem. Average</div></div>
+        <div class="print-stat"><div class="pval" style="color:#7c3aed">${hi}</div><div class="plbl">Highest</div></div>
+      </div>
+      <div class="print-table-wrap">
+        <table class="ptable">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:20px">#</th>
+              <th rowspan="2" class="left" style="min-width:130px">Learner's Name / LRN</th>
+              ${th1}
+              <th rowspan="2">Final<br/>Average</th>
+              ${printGaHeader}
+              <th rowspan="2">Remarks</th>
+            </tr>
+            <tr class="subrow">${th2}</tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="print-footer">
+        <div class="sign-block"><div class="sign-line">___________________________<div class="sign-label">Subject Teacher</div></div></div>
+        <div class="sign-block"><div class="sign-line">___________________________<div class="sign-label">Adviser / Class Adviser</div></div></div>
+        <div class="sign-block"><div class="sign-line">___________________________<div class="sign-label">Registrar</div></div></div>
+        <div class="sign-block"><div class="sign-line">___________________________<div class="sign-label">Principal</div></div></div>
+      </div>
+      <div class="print-page-num">${sem===1?'1st':'2nd'} Semester &nbsp;·&nbsp; Page 1 of 2</div>
+    </div>`;
+  }
+
+  function genPage(){
+    const s1th=SEM1.map(s=>`<th>${s.label}</th>`).join('');
+    const s2th=SEM2.map(s=>`<th>${s.label}</th>`).join('');
+    const gavgs=students.map(generalAvg).filter(v=>v!==null);
+    const ca=gavgs.length?(gavgs.reduce((a,b)=>a+b,0)/gavgs.length).toFixed(2):'—';
+    const pass=gavgs.filter(v=>v>=75).length;
+    const fail=gavgs.filter(v=>v<75).length;
+
+    const rows=students.map((s,i)=>{
+      const a1=semAvg(s,1),a2=semAvg(s,2),ga=generalAvg(s);
+      const passed=ga!==null&&ga>=75;
+      const s1c=SEM1.map(({key})=>{const f=fgSub(s,key,1);return`<td><span class="${pCls(f)}">${f??'—'}</span></td>`;}).join('');
+      const s2c=SEM2.map(({key})=>{const f=fgSub(s,key,2);return`<td><span class="${pCls(f)}">${f??'—'}</span></td>`;}).join('');
+      const rem=ga!==null?`<span class="p-pill ${passed?'pass':'fail'}">${passed?'PASSED':'FAILED'}</span>`:`<span class="p-pill none">—</span>`;
+      return `<tr>
+        <td class="pnum">${i+1}</td>
+        <td class="left"><div class="pname">${s.name}</div><div class="plrn">${s.lrn}</div></td>
+        ${s1c}
+        <td class="grp-border"><b class="${pCls(a1)}">${a1!==null?a1.toFixed(2):'—'}</b></td>
+        ${s2c}
+        <td class="grp-border"><b class="${pCls(a2)}">${a2!==null?a2.toFixed(2):'—'}</b></td>
+        <td class="grp-border"><span class="p-gen ${pCls(ga)}">${ga!==null?ga.toFixed(2):'—'}</span></td>
+        <td>${rem}</td>
+      </tr>`;
+    }).join('');
+
+    return `
+    <div class="print-page">
+      <div class="print-header">
+        <div class="print-header-logo">🎓</div>
+        <div class="print-header-text">
+          <h2>SUMMARY OF GRADES — GENERAL AVERAGE</h2>
+          <p>Department of Education &nbsp;·&nbsp; Senior High School &nbsp;·&nbsp; Grade 12 &nbsp;·&nbsp; TVL Track</p>
+        </div>
+        ${printMeta}
+      </div>
+      <div style="padding:8px 0 4px">
+        <span class="print-sem-badge" style="background:#0038a8;color:#fcd116">GENERAL AVERAGE — BOTH SEMESTERS</span>
+      </div>
+      <div class="print-stats">
+        <div class="print-stat"><div class="pval">${students.length}</div><div class="plbl">Total</div></div>
+        <div class="print-stat"><div class="pval" style="color:#15803d">${pass||'—'}</div><div class="plbl">Passing</div></div>
+        <div class="print-stat"><div class="pval" style="color:#dc2626">${fail||'—'}</div><div class="plbl">Failing</div></div>
+        <div class="print-stat"><div class="pval" style="color:#d97706">${ca}</div><div class="plbl">Gen. Average</div></div>
+      </div>
+      <div class="print-table-wrap">
+        <table class="ptable">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:20px">#</th>
+              <th rowspan="2" class="left" style="min-width:130px">Learner's Name / LRN</th>
+              <th colspan="${SEM1.length}">1st Semester — Final Grades</th>
+              <th>1st Sem<br/>Avg</th>
+              <th colspan="${SEM2.length}">2nd Semester — Final Grades</th>
+              <th>2nd Sem<br/>Avg</th>
+              <th style="background:#b45309">General<br/>Average</th>
+              <th rowspan="2">Remarks</th>
+            </tr>
+            <tr class="subrow">
+              ${s1th}
+              <th class="grp-border" style="background:#dbeafe;color:#1d4ed8;font-weight:700">SEM 1</th>
+              ${s2th}
+              <th class="grp-border" style="background:#dbeafe;color:#1d4ed8;font-weight:700">SEM 2</th>
+              <th class="grp-border" style="background:#fef3c7;color:#92400e;font-weight:700">GEN AVG</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="print-footer">
+        <div class="sign-block"><div class="sign-line">___________________________<div class="sign-label">Adviser / Class Adviser</div></div></div>
+        <div class="sign-block"><div class="sign-line">___________________________<div class="sign-label">Registrar</div></div></div>
+        <div class="sign-block"><div class="sign-line">___________________________<div class="sign-label">Principal</div></div></div>
+      </div>
+      <div class="print-page-num">General Average &nbsp;·&nbsp; Page 3 of 3</div>
+    </div>`;
+  }
+
+  return semPage(1) + semPage(2) + genPage();
+}
+
+/* ─── CONTROLS ── */
+function switchView(view,btn){
+  curView=view;
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(view==='gen'&&editMode){editMode=false;document.getElementById('editBtn').innerHTML='✏️ Edit Grades';document.getElementById('editBar').classList.remove('show');}
+  document.getElementById('editBtn').style.display=view==='gen'?'none':'flex';
+  render();
+}
+
+function toggleEdit(){
+  editMode=!editMode;
+  document.getElementById('editBtn').innerHTML=editMode?'✅ Done':'✏️ Edit Grades';
+  document.getElementById('editBar').classList.toggle('show',editMode);
+  render();
+  if(editMode) toast('Edit mode on — enter grades directly in the table');
+}
+
+function saveData(){
+  try{
+    localStorage.setItem('deped_v4', JSON.stringify(students));
+    createBackup(true); // auto-backup on every save
+    toast('✅ Grades saved & backed up!');
+  } catch(e){ toast('⚠️ Save failed'); }
+}
+
+/* ─── BACKUP SYSTEM ── */
+const BK_KEY = 'deped_v4_backups';
+const MAX_BACKUPS = 10;
+
+function getBackups(){
+  try{ return JSON.parse(localStorage.getItem(BK_KEY)||'[]'); }catch(e){ return []; }
+}
+function saveBackups(list){
+  localStorage.setItem(BK_KEY, JSON.stringify(list));
+}
+
+function createBackup(silent=false){
+  const list = getBackups();
+  const now  = new Date();
+  const label= now.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'})
+             + ' ' + now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+  // count filled grades
+  let filled=0;
+  students.forEach(s=>{
+    [...SEM1,...SEM2].forEach(({key})=>{
+      if(s.sem1.q1[key]||s.sem1.q2[key]||s.sem2.q3[key]||s.sem2.q4[key]) filled++;
+    });
+  });
+  const entry = { id: Date.now(), label, filled, data: JSON.parse(JSON.stringify(students)) };
+  list.unshift(entry);
+  if(list.length > MAX_BACKUPS) list.splice(MAX_BACKUPS);
+  saveBackups(list);
+  if(!silent) {
+    renderBackupList();
+    toast('✅ Backup created!');
+  }
+}
+
+function restoreBackup(id){
+  if(!confirm('Restore this backup? Current grades will be replaced.')) return;
+  const list = getBackups();
+  const entry = list.find(b=>b.id===id);
+  if(!entry){ toast('⚠️ Backup not found'); return; }
+  students = entry.data;
+  localStorage.setItem('deped_v4', JSON.stringify(students));
+  render();
+  closeBackup();
+  toast('✅ Backup restored!');
+}
+
+function deleteBackup(id){
+  if(!confirm('Delete this backup?')) return;
+  let list = getBackups().filter(b=>b.id!==id);
+  saveBackups(list);
+  renderBackupList();
+  toast('🗑 Backup deleted');
+}
+
+function renderBackupList(){
+  const list = getBackups();
+  const el   = document.getElementById('backupList');
+  if(!list.length){
+    el.innerHTML=`<div class="bk-empty"><span>🗄️</span>No backups yet.<br/>Click "Save New Backup" or press 💾 Save to create one.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="bk-list">`+list.map(b=>`
+    <div class="bk-item">
+      <div class="bk-icon">💾</div>
+      <div class="bk-info">
+        <div class="bk-label">${b.label}</div>
+        <div class="bk-meta">${b.filled} grade entries recorded · ${students.length} students</div>
+      </div>
+      <div class="bk-actions">
+        <button class="bk-btn restore" onclick="restoreBackup(${b.id})">↩ Restore</button>
+        <button class="bk-btn del"     onclick="deleteBackup(${b.id})">✕</button>
+      </div>
+    </div>`).join('')+`</div>`;
+}
+
+function openBackup(){
+  document.getElementById('uploadModal').classList.remove('show');
+  renderBackupList();
+  document.getElementById('backupModal').classList.add('show');
+}
+function closeBackup(){
+  document.getElementById('backupModal').classList.remove('show');
+}
+
+function exportBackup(){
+  const list = getBackups();
+  if(!list.length){ toast('No backups to export'); return; }
+  const blob = new Blob([JSON.stringify({exported: new Date().toISOString(), backups: list}, null, 2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `grades-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  toast('⬇️ Backup file downloaded!');
+}
+
+function importBackup(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      const list   = parsed.backups || (Array.isArray(parsed) ? parsed : null);
+      if(!list) throw new Error('Invalid backup file');
+      if(!confirm(`Import ${list.length} backup(s)? This will merge with existing backups.`)) return;
+      const existing = getBackups();
+      const existIds = new Set(existing.map(b=>b.id));
+      const merged   = [...list.filter(b=>!existIds.has(b.id)), ...existing]
+                        .sort((a,b)=>b.id-a.id).slice(0, MAX_BACKUPS);
+      saveBackups(merged);
+      renderBackupList();
+      toast(`✅ Imported ${list.length} backup(s)!`);
+    }catch(err){ toast('⚠️ Invalid backup file'); }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function downloadPDF(){
+  // Build print content: 3 pages (sem1 / sem2 / general)
+  const wasEdit=editMode;
+  if(editMode){editMode=false;render();}
+  document.getElementById('printContent').innerHTML=buildPrintContent();
+  setTimeout(()=>{
+    window.print();
+    if(wasEdit){editMode=true;render();}
+  },250);
+}
+
+function clearSem(){
+  if(curView==='gen'){toast('Switch to a semester tab to clear grades');return;}
+  const sem=curSem();
+  if(!confirm(`Clear all grades for ${sem===1?'1st':'2nd'} Semester?`)) return;
+  students.forEach(s=>{
+    const d=semData(s,sem);
+    semSubs(sem).forEach(({key})=>{d[semQA(sem)][key]=null;d[semQB(sem)][key]=null;});
+  });
+  render();
+  toast('Grades cleared');
+}
+
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+/* ─── START ── */
+renderStats();
+render();
+loadInfo();
+
+/* ─── SCHOOL INFO ── */
+function saveInfo(){
+  localStorage.setItem('deped_info', JSON.stringify({
+    sy:      document.getElementById('fieldSY').value,
+    section: document.getElementById('fieldSection').value,
+    adviser: document.getElementById('fieldAdviser').value
+  }));
+}
+function loadInfo(){
+  try{
+    const d=JSON.parse(localStorage.getItem('deped_info')||'{}');
+    if(d.sy)      document.getElementById('fieldSY').value=d.sy;
+    if(d.section) document.getElementById('fieldSection').value=d.section;
+    if(d.adviser) document.getElementById('fieldAdviser').value=d.adviser;
+  }catch(e){}
+}
+function getInfo(){
+  return {
+    sy:      document.getElementById('fieldSY').value      || '2025–2026',
+    section: document.getElementById('fieldSection').value || '___________________',
+    adviser: document.getElementById('fieldAdviser').value || '___________________'
+  };
+}
+
+/* ─── UPLOAD & AI EXTRACTION ── */
+let uploadedFileBase64 = null;
+let uploadedFileType   = null;
+let extractedData      = null;
+
+function openUpload(){
+  document.getElementById('backupModal').classList.remove('show');
+  document.getElementById('uploadModal').classList.add('show');
+  resetUploadModal();
+}
+function closeUpload(){
+  document.getElementById('uploadModal').classList.remove('show');
+  resetUploadModal();
+}
+function resetUploadModal(){
+  uploadedFileBase64=null; uploadedFileType=null; extractedData=null;
+  document.getElementById('fileInput').value='';
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('previewImg').src='';
+  document.getElementById('previewName').textContent='';
+  document.getElementById('aiStatus').classList.remove('show','processing','success','error');
+  document.getElementById('resultPreview').classList.remove('show');
+  document.getElementById('resultPreview').innerHTML='';
+  document.getElementById('extractBtn').disabled=true;
+  document.getElementById('extractBtn').style.opacity='.5';
+  document.getElementById('applyBtn').style.display='none';
+}
+
+function onFileSelect(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const dataUrl=e.target.result;
+    uploadedFileBase64=dataUrl.split(',')[1];
+    uploadedFileType=file.type;
+    // Show preview
+    const pb=document.getElementById('previewBox');
+    const pi=document.getElementById('previewImg');
+    if(file.type.startsWith('image/')){
+      pi.src=dataUrl; pb.classList.add('show');
+    } else {
+      pi.src=''; pb.classList.add('show');
+      document.getElementById('previewImg').style.display='none';
+    }
+    document.getElementById('previewName').textContent=`📄 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    document.getElementById('extractBtn').disabled=false;
+    document.getElementById('extractBtn').style.opacity='1';
+    document.getElementById('applyBtn').style.display='none';
+    document.getElementById('aiStatus').classList.remove('show');
+    document.getElementById('resultPreview').classList.remove('show');
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag & drop
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault(); dz.classList.remove('dragover');
+  const fi=document.getElementById('fileInput');
+  fi.files=e.dataTransfer.files;
+  onFileSelect(fi);
+});
+
+async function extractGrades(){
+  if(!uploadedFileBase64) return;
+  const sem=parseInt(document.getElementById('uploadSemSelect').value);
+  const subList = sem===1 ? SEM1 : SEM2;
+  const qa = sem===1?'Q1':'Q3', qb = sem===1?'Q2':'Q4';
+
+  setAiStatus('processing','Compressing image…');
+  document.getElementById('extractBtn').disabled=true;
+  document.getElementById('applyBtn').style.display='none';
+  extractedData=null;
+
+  // Compress image to max 1000px wide, quality 0.75 before sending
+  let finalBase64 = uploadedFileBase64;
+  let finalType   = uploadedFileType;
+  if(uploadedFileType.startsWith('image/')){
+    try {
+      finalBase64 = await compressImage(uploadedFileBase64, 1000, 0.75);
+      finalType = 'image/jpeg';
+    } catch(e){ /* fallback to original */ }
+  }
+
+  setAiStatus('processing','Reading grades from SF9…');
+
+  const keys  = subList.map(s=>s.key).join(',');
+  const labels = subList.map(s=>s.label).join(', ');
+  const names  = students.map(s=>s.name).join('; ');
+
+  const prompt =
+`Extract student grades from this DepEd SF9 / grade sheet image.
+Subjects (${sem===1?'1st':'2nd'} Semester): ${labels}
+Students: ${names}
+
+Return ONLY compact JSON — no markdown, no explanation:
+{"semester":${sem},"students":[{"name":"LAST, FIRST","grades":{"${subList[0].key}":{"${qa}":null,"${qb}":null},...}}]}
+
+Keys: ${keys}
+Use null for blank/unclear. Grades are 60-100 integers.`;
+
+  try {
+    const res = await Promise.race([
+      fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens: 2000,
+          messages:[{ role:'user', content:[
+            { type:'image', source:{ type:'base64', media_type: finalType, data: finalBase64 }},
+            { type:'text', text: prompt }
+          ]}]
+        })
+      }),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Request timed out after 30s')),30000))
+    ]);
+
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message);
+
+    let text = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+    extractedData = parsed;
+
+    // Build result preview
+    let html='', matchCount=0;
+    parsed.students.forEach(ps=>{
+      const match = students.find(s=>nameMatch(s.name, ps.name));
+      if(match){
+        matchCount++;
+        const summary = subList.slice(0,4).map(sub=>{
+          const g=ps.grades?.[sub.key]||{};
+          return `${sub.label.split(' ')[0]}: ${g[qa]??'—'}/${g[qb]??'—'}`;
+        }).join(' · ');
+        html+=`<div class="result-row"><span class="result-name">✅ ${match.name}</span><span class="result-grades">${summary}…</span></div>`;
+      } else {
+        html+=`<div class="result-row"><span class="result-name" style="color:#94a3b8">⚠️ ${ps.name}</span><span class="result-grades" style="color:#94a3b8">No match</span></div>`;
+      }
+    });
+
+    document.getElementById('resultPreview').innerHTML=
+      `<div style="font-weight:600;font-size:12px;margin-bottom:8px;color:#0038a8">Matched ${matchCount} of ${parsed.students.length} students</div>${html}`;
+    document.getElementById('resultPreview').classList.add('show');
+    setAiStatus('success',`✅ Done — ${matchCount} students matched. Review and apply.`);
+    document.getElementById('applyBtn').style.display='flex';
+  } catch(e){
+    setAiStatus('error','❌ '+(e.message||'Could not extract. Try a clearer image.'));
+  }
+  document.getElementById('extractBtn').disabled=false;
+}
+
+/* Compress image to maxWidth, quality */
+function compressImage(base64, maxWidth, quality){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const scale = Math.min(1, maxWidth/img.width);
+      const w = Math.round(img.width*scale);
+      const h = Math.round(img.height*scale);
+      const canvas = document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const out = canvas.toDataURL('image/jpeg', quality);
+      resolve(out.split(',')[1]);
+    };
+    img.onerror = reject;
+    img.src = 'data:image/jpeg;base64,'+base64;
+  });
+}
+
+function nameMatch(a, b){
+  if(!a||!b) return false;
+  const norm = s=>s.toUpperCase().replace(/[^A-Z0-9]/g,' ').replace(/\s+/g,' ').trim();
+  const na=norm(a), nb=norm(b);
+  if(na===nb) return true;
+  // Try partial: last name match
+  const lastA=na.split(',')[0]?.trim(), lastB=nb.split(',')[0]?.trim();
+  if(lastA && lastB && lastA===lastB) return true;
+  // Fuzzy: check if >70% of words match
+  const wordsA=new Set(na.split(' ')), wordsB=nb.split(' ');
+  const hits=wordsB.filter(w=>w.length>2&&wordsA.has(w)).length;
+  return hits >= Math.min(2, Math.floor(wordsB.length*0.6));
+}
+
+function applyExtracted(){
+  if(!extractedData) return;
+  const sem=parseInt(document.getElementById('uploadSemSelect').value);
+  const subList = sem===1 ? SEM1 : SEM2;
+  const qa = sem===1?'q1':'q3', qb = sem===1?'q2':'q4';
+  const qaKey = sem===1?'Q1':'Q3', qbKey = sem===1?'Q2':'Q4';
+
+  let applied=0;
+  extractedData.students.forEach(ps=>{
+    const s=students.find(st=>nameMatch(st.name, ps.name));
+    if(!s) return;
+    const d=sem===1?s.sem1:s.sem2;
+    subList.forEach(sub=>{
+      const g=ps.grades?.[sub.key];
+      if(g){
+        const v1=g[qaKey]??g['Q1']??g['Q3']??null;
+        const v2=g[qbKey]??g['Q2']??g['Q4']??null;
+        d[qa][sub.key] = v1!==null ? Math.min(100,Math.max(60,+v1)) : null;
+        d[qb][sub.key] = v2!==null ? Math.min(100,Math.max(60,+v2)) : null;
+      }
+    });
+    applied++;
+  });
+
+  // Switch to correct semester view
+  const semBtn = document.querySelectorAll('.seg button')[sem-1];
+  switchView(sem===1?'sem1':'sem2', semBtn);
+
+  closeUpload();
+  saveData();
+  toast(`✅ Grades applied for ${applied} students from SF9`);
+}
+
+function setAiStatus(type, msg){
+  const el=document.getElementById('aiStatus');
+  const txt=document.getElementById('aiStatusText');
+  el.className='ai-status show '+type;
+  txt.textContent=msg;
+  if(type==='processing'){
+    el.innerHTML=`<div class="spinner"></div><span>${msg}</span>`;
+  } else {
+    el.innerHTML=`<span>${msg}</span>`;
+  }
+}
+</script>
+</body>
+</html>
